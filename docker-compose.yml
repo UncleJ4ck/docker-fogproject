@@ -1,0 +1,85 @@
+services:
+  fog:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fog
+    depends_on:
+      - db
+      - nfs
+      - tftp
+      - ftp
+    environment:
+      DB_HOST: db
+      DB_NAME: fog
+      DB_USER: fog
+      DB_PASS: fogpassword
+      TFTP_HOST: tftp
+      STORAGE_HOST: nfs
+      FTP_USER: fog
+      FTP_PASS: fogftp
+    volumes:
+      - images:/images
+      - tftpboot:/tftpboot
+      - snapins:/opt/fog/snapins
+    ports:
+      - "80:80"
+      - "443:443"
+
+  db:
+    image: mariadb:10.5
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: fog
+      MYSQL_USER: fog
+      MYSQL_PASSWORD: fogpassword
+    volumes:
+      - db_data:/var/lib/mysql
+      - fog_sql:/docker-entrypoint-initdb.d/fog.sql:ro
+    restart: unless-stopped
+
+  tftp:
+    image: pghalliday/tftp
+    container_name: tftp
+    volumes:
+      - tftpboot:/var/tftpboot
+    ports:
+      - "69:69/udp"
+    restart: unless-stopped
+
+  nfs:
+    image: itsthenetwork/nfs-server-alpine:latest
+    container_name: nfs
+    privileged: true
+    environment:
+      SHARED_DIRECTORY: /images
+    volumes:
+      - images:/images
+    ports:
+      - "2049:2049"
+      - "111:111"
+    restart: unless-stopped
+
+  ftp:
+    image: fauria/vsftpd
+    container_name: ftp
+    environment:
+      LOCAL_USERS: "true"
+      PASV_MIN_PORT: 21000
+      PASV_MAX_PORT: 21010
+      FTP_USER: fog
+      FTP_PASS: fogftp
+    volumes:
+      - snapins:/home/vsftpd
+    ports:
+      - "21:21"
+      - "21000-21010:21000-21010"
+    restart: unless-stopped
+
+volumes:
+  images:
+  tftpboot:
+  db_data:
+  snapins:
+  fog_sql:
