@@ -8,7 +8,6 @@ containerize FogProject in a Docker image for streamlined debugging and developm
 git clone https://github.com/YOURUSER/docker-fogproject.git
 cd docker-fogproject
 docker compose build fog
-
 docker compose up -d
 ```
 
