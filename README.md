@@ -5,7 +5,7 @@ containerize FogProject in a Docker image for streamlined debugging and developm
 ## Quick start
 
 ```bash
-git clone https://github.com/YOURUSER/docker-fogproject.git
+git clone https://github.com/UncleJ4ck/docker-fogproject
 cd docker-fogproject
 docker compose build fog
 docker compose up -d
